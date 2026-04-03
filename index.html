@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Teto 3D: Baguette Hunter</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        #ui { position: absolute; top: 20px; left: 20px; color: white; pointer-events: none; text-shadow: 2px 2px #000; }
+        #menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                background: rgba(255, 255, 255, 0.9); padding: 30px; border-radius: 20px; text-align: center; border: 5px solid #ff66b2; }
+        .skin-btn { padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 10px; border: none; font-weight: bold; }
+        #joy-left { position: absolute; bottom: 50px; left: 50px; width: 100px; height: 100px; background: rgba(255,255,255,0.2); border-radius: 50%; border: 2px solid white; }
+        #instructions { position: absolute; top: 10px; right: 10px; color: #ff66b2; background: white; padding: 10px; border-radius: 10px; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div id="ui">
+    <h1>Baguettes: <span id="score">0</span></h1>
+    <h3>Jugando como: <span id="skin-name">Kasane Teto</span></h3>
+</div>
+
+<div id="instructions">
+    <b>MULTI-TABLET:</b><br>
+    IZQUIERDA: Mover a Teto<br>
+    DERECHA: Tocar para esconder Baguette
+</div>
+
+<div id="menu">
+    <h1 style="color:#ff66b2">🥖 TETO 3D WORLD 🥖</h1>
+    <p>Elige tu Vocaloid:</p>
+    <button class="skin-btn" style="background:#ff66b2; color:white" onclick="start('Teto', 0xff66b2)">Teto</button>
+    <button class="skin-btn" style="background:#33ffcc" onclick="start('Miku', 0x33ffcc)">Miku</button>
+    <button class="skin-btn" style="background:#ffff00" onclick="start('Rin', 0xffff00)">Rin</button>
+    <button class="skin-btn" style="background:#3366ff; color:white" onclick="start('Kaito', 0x3366ff)">Kaito</button>
+</div>
+
+<div id="joy-left"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+    let scene, camera, renderer, player, clock;
+    let baguettes = [];
+    let score = 0;
+    let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+    let targetRotation = 0;
+
+    function start(name, color) {
+        document.getElementById('menu').style.display = 'none';
+        document.getElementById('skin-name').innerText = name;
+        init(color);
+    }
+
+    function init(playerColor) {
+        // 1. Escena y Cámara
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xaaccff); // Cielo
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        clock = new THREE.Clock();
+
+        // 2. Renderizador
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 3. Luces
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 10, 7.5);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0x404040));
+
+        // 4. Suelo (Pasto)
+        const groundGeo = new THREE.PlaneGeometry(100, 100);
+        const groundMat = new THREE.MeshPhongMaterial({ color: 0x7cfc00 });
+        const ground = new THREE.Mesh(groundGeo, groundMat);
+        ground.rotation.x = -Math.PI / 2;
+        scene.add(ground);
+
+        // 5. Jugador (Cuerpo 3D de Teto/Vocaloid)
+        const group = new THREE.Group();
+        
+        // Cuerpo (Cubo estilizado)
+        const bodyGeo = new THREE.BoxGeometry(1, 1.5, 0.5);
+        const bodyMat = new THREE.MeshPhongMaterial({ color: playerColor });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = 0.75;
+        group.add(body);
+
+        // Cabeza
+        const headGeo = new THREE.SphereGeometry(0.4, 32, 32);
+        const head = new THREE.Mesh(headGeo, bodyMat);
+        head.position.y = 1.8;
+        group.add(head);
+
+        // Coletas
+        const hairGeo = new THREE.CylinderGeometry(0.1, 0.1, 1);
+        const hairL = new THREE.Mesh(hairGeo, bodyMat);
+        hairL.position.set(-0.5, 1.8, 0);
+        hairL.rotation.z = Math.PI / 4;
+        group.add(hairL);
+        const hairR = hairL.clone();
+        hairR.position.x = 0.5;
+        hairR.rotation.z = -Math.PI / 4;
+        group.add(hairR);
+
+        player = group;
+        scene.add(player);
+
+        camera.position.set(0, 5, 10);
+        camera.lookAt(player.position);
+
+        // Controles Táctiles
+        window.addEventListener('touchstart', handleTouch);
+        animate();
+    }
+
+    function handleTouch(e) {
+        const touchX = e.touches[0].clientX;
+        const touchY = e.touches[0].clientY;
+
+        // Si toca la mitad derecha: ESCONDE BAGUETTE
+        if (touchX > window.innerWidth / 2) {
+            spawnBaguette();
+        } 
+        // Si toca la mitad izquierda: MUEVE A TETO HACIA ALLÁ
+        else {
+            player.position.x += (touchX < window.innerWidth / 4) ? -1 : 1;
+            player.position.z += (touchY < window.innerHeight / 2) ? -1 : 1;
+        }
+    }
+
+    function spawnBaguette() {
+        const bagGeo = new THREE.CapsuleGeometry(0.2, 0.8, 4, 8);
+        const bagMat = new THREE.MeshPhongMaterial({ color: 0xd2b48c }); // Color pan
+        const bag = new THREE.Mesh(bagGeo, bagMat);
+        
+        bag.position.x = (Math.random() - 0.5) * 20;
+        bag.position.z = (Math.random() - 0.5) * 20;
+        bag.position.y = 0.5;
+        bag.rotation.z = Math.PI / 2;
+        
+        scene.add(bag);
+        baguettes.push(bag);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        
+        // Animación suave de la cámara
+        camera.position.x = player.position.x;
+        camera.position.z = player.position.z + 10;
+        camera.lookAt(player.position);
+
+        // Colisiones con baguettes
+        baguettes.forEach((b, index) => {
+            b.rotation.y += 0.02; // Girar baguette
+            const dist = player.position.distanceTo(b.position);
+            if (dist < 1.2) {
+                scene.remove(b);
+                baguettes.splice(index, 1);
+                score++;
+                document.getElementById('score').innerText = score;
+            }
+        });
+
+        renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+</script>
+</body>
+</html>
