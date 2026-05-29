@@ -2,90 +2,479 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Teto Mansion 3D: Brillo Máximo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevHub - Creador de Páginas y Juegos</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; }
-        #ui { position: absolute; top: 20px; left: 20px; color: white; pointer-events: none; text-shadow: 2px 2px #000; z-index: 10; }
-        #stamina-bar { width: 200px; height: 15px; background: rgba(0,0,0,0.5); border: 2px solid white; border-radius: 10px; overflow: hidden; }
-        #stamina-fill { width: 100%; height: 100%; background: #00ffcc; }
-        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; pointer-events: none; z-index: 10; }
-        .btn-zone { width: 80px; height: 80px; background: rgba(255,255,255,0.3); border-radius: 50%; pointer-events: auto; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: 3px solid white; user-select: none; }
-        #joystick-area { width: 120px; height: 120px; background: rgba(255,255,255,0.2); border-radius: 50%; border: 3px solid #ff66b2; pointer-events: auto; }
-        #menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 20px; text-align: center; border: 5px solid #ff66b2; z-index: 100; }
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* BARRA LATERAL IZQUIERDA */
+        aside {
+            width: 260px;
+            background-color: #161b22;
+            border-right: 1px solid #30363d;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .section-title {
+            padding: 12px 15px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #8b949e;
+            background-color: #0d1117;
+            border-bottom: 1px solid #30363d;
+            border-top: 1px solid #30363d;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .section-title:first-child { border-top: none; }
+
+        .toolbox {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .btn-tool {
+            background-color: #21262d;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+            padding: 8px 12px;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-tool:hover {
+            background-color: #30363d;
+            border-color: #8b949e;
+            color: #58a6ff;
+        }
+        .btn-tool code {
+            background-color: #0d1117;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #ff7b72;
+            font-family: monospace;
+            font-size: 11px;
+            margin-left: auto;
+        }
+
+        /* ACCIONES DEL PROYECTO */
+        .action-box {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background-color: #1c2128;
+            border-bottom: 1px solid #30363d;
+        }
+        .btn-main {
+            width: 100%;
+            padding: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #30363d;
+            background-color: #21262d;
+            color: #c9d1d9;
+            text-align: center;
+        }
+        .btn-main:hover { background-color: #30363d; }
+        .btn-save { color: #58a6ff; border-color: #388bfd; }
+        .btn-play { background-color: #238636; color: white; border-color: rgba(240,246,252,0.1); font-weight: 700; }
+        .btn-play:hover { background-color: #2ea043; }
+
+        /* LISTA DE PROYECTOS */
+        .project-list {
+            padding: 10px;
+            list-style: none;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .project-item {
+            padding: 8px 12px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .project-item:hover {
+            border-color: #8b949e;
+            background: #30363d;
+        }
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #f85149;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* ÁREA PRINCIPAL */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            background-color: #161b22;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #30363d;
+        }
+        .repo-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .user-tag { color: #58a6ff; font-weight: bold; }
+        .separator { color: #8b949e; }
+        .project-input {
+            background: transparent;
+            border: 1px solid transparent;
+            color: #c9d1d9;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            width: 180px;
+        }
+        .project-input:hover, .project-input:focus {
+            background: #21262d;
+            border-color: #30363d;
+            outline: none;
+        }
+        
+        /* EDITOR */
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+        }
+        .file-tab {
+            background-color: #161b22;
+            padding: 8px 16px;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+            border: 1px solid #30363d;
+            border-bottom: none;
+            display: inline-block;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        textarea {
+            flex: 1;
+            background-color: #161b22;
+            color: #7ee787;
+            border: 1px solid #30363d;
+            border-radius: 0 6px 6px 6px;
+            padding: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 15px;
+            resize: none;
+            outline: none;
+            line-height: 1.5;
+            overflow-y: auto;
+        }
+
+        /* CAPA DE PANTALLA COMPLETA FIJA PARA EL JUEGO (Evita el error 404) */
+        #game-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #1a1a1a;
+            z-index: 99999;
+        }
+        #game-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: #1a1a1a;
+        }
+        .btn-exit-game {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background-color: rgba(22, 27, 34, 0.9);
+            color: #ff7b72;
+            border: 1px solid #30363d;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 100000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        .btn-exit-game:hover {
+            background-color: #f85149;
+            color: white;
+        }
+
+        /* MODAL DE AYUDA */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 200;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            overflow-y: auto;
+        }
+        .modal-content {
+            background-color: #161b22;
+            margin: 5% auto;
+            padding: 24px;
+            border-radius: 6px;
+            width: 85%; max-width: 650px;
+            border: 1px solid #30363d;
+        }
+        .close { color: #8b949e; float: right; font-size: 24px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div id="ui">
-    <h1>🥖 Baguettes: <span id="score">0</span> / 10</h1>
-    <div id="stamina-bar"><div id="stamina-fill"></div></div>
-    <b>STAMINA</b>
-</div>
+    <aside>
+        <div class="section-title">✨ Plantillas Base</div>
+        <div class="toolbox">
+            <button class="btn-tool" onclick="insertTemplate('base')">📄 Plantilla Vacía <code>html</code></button>
+            <button class="btn-tool" onclick="insertTemplate('clicker')">🎮 Juego Clicker <code>game</code></button>
+        </div>
 
-<div id="menu">
-    <h1 style="color:#ff66b2">TETO MANSION 3D</h1>
-    <p>¡Busca las baguettes en las habitaciones!</p>
-    <button style="padding:15px; background:#ff66b2; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;" onclick="start()">¡JUGAR AHORA!</button>
-</div>
+        <div class="section-title">🧱 Códigos Rápidos</div>
+        <div class="toolbox">
+            <button class="btn-tool" onclick="insertCode('button')">🔘 Crear Botón <code>&lt;button&gt;</code></button>
+            <button class="btn-tool" onclick="insertCode('title')">🔤 Título Grande <code>&lt;h1&gt;</code></button>
+            <button class="btn-tool" onclick="insertCode('text')">📝 Párrafo de Texto <code>&lt;p&gt;</code></button>
+            <button class="btn-tool" onclick="insertCode('style')">🎨 Caja con Estilo <code>&lt;div&gt;</code></button>
+            <button class="btn-tool" onclick="insertCode('script')">⚡ Script de JavaScript <code>&lt;script&gt;</code></button>
+            <button class="btn-tool" onclick="insertCode('clickEvent')">🎯 Función Click JS <code>function</code></button>
+        </div>
 
-<div class="controls" id="game-controls" style="display:none">
-    <div id="joystick-area"></div>
-    <div style="display:flex; gap: 20px;">
-        <div class="btn-zone" id="btn-run">CORRER</div>
-        <div class="btn-zone" id="btn-jump">SALTAR</div>
+        <div class="section-title">🛠️ Acciones del Proyecto</div>
+        <div class="action-box">
+            <button class="btn-main" onclick="toggleHelp(true)">❓ Help / Manual</button>
+            <button class="btn-main btn-save" onclick="saveProject()">💾 Guardar Cambios</button>
+            <button class="btn-main btn-play" onclick="launchGameInternal()">🚀 Publicar y Abrir Página</button>
+        </div>
+
+        <div class="section-title">📁 Mis Proyectos Guardados</div>
+        <ul id="project-list" class="project-list">
+            </ul>
+    </aside>
+
+    <main>
+        <header>
+            <div class="repo-info">
+                <span class="user-tag">mi-usuario</span>
+                <span class="separator">/</span>
+                <input type="text" id="project-name" class="project-input" value="mi-primer-juego">
+            </div>
+        </header>
+
+        <div class="editor-container">
+            <div class="file-tab">📄 index.html</div>
+            <textarea id="code-editor" placeholder="Escribe o inserta código aquí..."><!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=UTF-8">
+  <title>Hello, World!</title>
+</head>
+<body>
+  <h1>
+    Hello, World!
+  </h1>
+</body>
+</html></textarea>
+        </div>
+    </main>
+
+    <div id="game-overlay">
+        <button class="btn-exit-game" onclick="closeGameInternal()">🛠️ Volver al Editor</button>
+        <iframe id="game-frame" sandbox="allow-scripts"></iframe>
     </div>
-</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <div id="help-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="toggleHelp(false)">&times;</span>
+            <h2 style="color: #58a6ff; margin-top: 0;">📖 Guía de Creador</h2>
+            <hr style="border-color: #30363d;">
+            <p>1. Toca el editor para posicionar tu cursor.</p>
+            <p>2. Agrega códigos rápidos tocando los botones del menú lateral.</p>
+            <p>3. Presiona <strong>"🚀 Publicar y Abrir Página"</strong> para probar tu juego a pantalla completa sin errores de servidor.</p>
+        </div>
+    </div>
 
-<script>
-    let scene, camera, renderer, player, clock;
-    let baguettes = [];
-    let score = 0, stamina = 100, isRunning = false, yVelocity = 0;
-    let moveDir = { x: 0, z: 0 };
+    <script>
+        document.addEventListener("DOMContentLoaded", loadProjectList);
 
-    function start() {
-        document.getElementById('menu').style.display = 'none';
-        document.getElementById('game-controls').style.display = 'flex';
-        init();
+        const codes = {
+            'button': '<button onclick="alert(\'¡Hiciste click!\')">Presióname</button>',
+            'title': '<h1>Título de mi Juego</h1>',
+            'text': '<p>Escribe aquí...</p>',
+            'style': '<div style="background: #333; padding: 20px; border-radius: 8px; color: gold;">\n  <h3>Contenedor</h3>\n</div>',
+            'script': '<script>\n  // Tu código JavaScript\n<\/script>',
+            'clickEvent': 'function miAccion() {\n  alert("¡Acción!");\n}'
+        };
+
+        const templates = {
+            'base': `<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=UTF-8">
+  <title>Hello, World!</title>
+</head>
+<body>
+  <h1>
+    Hello, World!
+  </h1>
+</body>
+</html>`,
+            'clicker': `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Mini Clicker</title>
+  <style>
+    body { background: #1a1a1a; color: white; text-align: center; font-family: sans-serif; padding-top: 50px; }
+    button { background: #2ea043; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    .score { font-size: 40px; color: #58a6ff; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>🎮 Puntuación Máxima</h1>
+  <p class="score" id="contador">0</p>
+  <button onclick="sumarPuntos()">¡CLICK!</button>
+
+  <script>
+    let clicks = 0;
+    function sumarPuntos() {
+      clicks++;
+      document.getElementById('contador').innerText = clicks;
     }
+  <\/script>
+</body>
+</html>`
+        };
 
-    function init() {
-        scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87CEEB); // Cielo azul claro
-        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        clock = new THREE.Clock();
-
-        renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-
-        // LUCES MUCHO MÁS FUERTES
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1); 
-        scene.add(ambientLight);
-        const sunLight = new THREE.DirectionalLight(0xffffff, 1);
-        sunLight.position.set(5, 10, 5);
-        scene.add(sunLight);
-
-        // Suelo de madera brillante
-        const floor = new THREE.Mesh(
-            new THREE.PlaneGeometry(100, 100),
-            new THREE.MeshPhongMaterial({ color: 0x8B4513 })
-        );
-        floor.rotation.x = -Math.PI / 2;
-        scene.add(floor);
-
-        // Paredes de la mansión (Color claro para que se vea)
-        function wall(w, h, d, x, z) {
-            const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), new THREE.MeshPhongMaterial({color: 0xffffff}));
-            m.position.set(x, h/2, z);
-            scene.add(m);
+        function insertCode(key) {
+            const editor = document.getElementById('code-editor');
+            const startPos = editor.selectionStart;
+            const endPos = editor.selectionEnd;
+            const text = editor.value;
+            const insertText = codes[key];
+            
+            editor.value = text.substring(0, startPos) + insertText + text.substring(endPos);
+            editor.focus();
+            editor.selectionStart = editor.selectionEnd = startPos + insertText.length;
         }
-        wall(100, 10, 1, 0, -50); wall(100, 10, 1, 0, 50); // Exteriores
-        wall(1, 10, 100, -50, 0); wall(1, 10, 100, 50, 0);
-        wall(30, 10, 1, -20, 10); wall(1, 10, 30, 10, -20); // Habitaciones
 
-        // Jugador (Teto Rosa)
-        player = new THREE.Group();
-        const body = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), new THREE.MeshPhongMaterial({color: 0xff66b2}));
-        body.position.y = 1;
+        function insertTemplate(key) {
+            if(confirm("¿Quieres cargar esta plantilla? Reemplazará tu código actual.")) {
+                document.getElementById('code-editor').value = templates[key];
+            }
+        }
+
+        function saveProject() {
+            const name = document.getElementById('project-name').value.trim().replace(/\s+/g, '-').toLowerCase();
+            const code = document.getElementById('code-editor').value;
+            if(!name) return alert("Ponle un nombre al proyecto.");
+
+            let projects = JSON.parse(localStorage.getItem('devhub_projects')) || {};
+            projects[name] = code;
+            localStorage.setItem('devhub_projects', JSON.stringify(projects));
+            loadProjectList();
+            alert(`¡"${name}" guardado!`);
+        }
+
+        function loadProjectList() {
+            const listContainer = document.getElementById('project-list');
+            listContainer.innerHTML = "";
+            const projects = JSON.parse(localStorage.getItem('devhub_projects')) || {};
+
+            Object.keys(projects).forEach(name => {
+                const li = document.createElement('li');
+                li.className = 'project-item';
+                li.innerHTML = `
+                    <span onclick="loadProject('${name}')">🌐 ${name}</span>
+                    <button class="delete-btn" onclick="deleteProject('${name}', event)">×</button>
+                `;
+                listContainer.appendChild(li);
+            });
+        }
+
+        function loadProject(name) {
+            const projects = JSON.parse(localStorage.getItem('devhub_projects')) || {};
+            if(projects[name]) {
+                document.getElementById('project-name').value = name;
+                document.getElementById('code-editor').value = projects[name];
+            }
+        }
+
+        function deleteProject(name, event) {
+            event.stopPropagation();
+            if(confirm(`¿Borrar "${name}"?`)) {
+                let projects = JSON.parse(localStorage.getItem('devhub_projects')) || {};
+                delete projects[name];
+                localStorage.setItem('devhub_projects', JSON.stringify(projects));
+                loadProjectList();
+            }
+        }
+
+        // NUEVA FUNCIÓN INMERSIVA: Ejecuta el código dentro de la misma página de manera segura
+        function launchGameInternal() {
+            const code = document.getElementById('code-editor').value;
+            const frame = document.getElementById('game-frame');
+            const overlay = document.getElementById('game-overlay');
+            
+            // Inyectar el código directo al iframe
+            frame.srcdoc = code;
+            
+            // Mostrar la capa de pantalla completa
+            overlay.style.display = "block";
+        }
+
+        // Cierra el modo de juego y te regresa al editor intacto
+        function closeGameInternal() {
+            const overlay = document.getElementById('game-overlay');
+            const frame = document.getElementById('game-frame');
+            
+            overlay.style.display = "none";
+            frame.srcdoc = ""; // Limpiar memoria del juego
+        }
+
+        function toggleHelp(show) {
+            document.getElementById('help-modal').style.display = show ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>
